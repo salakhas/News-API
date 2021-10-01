@@ -31,6 +31,12 @@
             width: 200px;
             height: 240px;
         }
+        .dimen{
+            width: 400px;
+            height: 50px;
+            margin: auto;
+            margin-left: 500px;
+        }
     </style>
 </head>
 <body>
@@ -46,7 +52,10 @@
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo02" aria-controls="navbarTogglerDemo02" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
               </button>
-            
+              <form class="form-inline my-2 my-lg-0">
+                <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search" id="inputSearch">
+                <button class="btn btn-warning my-2 my-sm-0" type="submit" id="search">Search</button>
+              </form>
               <div class="collapse navbar-collapse justify-content-end" id="navbarTogglerDemo02">
             <ul class="navbar-nav ml-auto " style="color: white;">
                 <li class="nav-item active list-inline-item"><a class="nav-link text-light" href="index.html">Home</a></li>
@@ -60,7 +69,13 @@
     <h1 class="text-center text-success"><b><u>Sports News</b></u></h1><br/>
     <h4 class="text-center">TOP HEADLINES:</h4><br/>
     <div id="news" class="container"></div>
+    <div class="dimen" id="dimen">
+        
+    </div>
     <script>
+           let currentPage = 1;
+        let limit = 3;
+        let data = [];
         window.addEventListener("load",function() {
                getNewsData();
         })
@@ -88,12 +103,12 @@
                 container.innerHTML = "";
                 const div = document.createElement("div");
                 let row = document.createElement("div");
-                for(let i=0; i< 10; i++){
-                    const card = createNews(res[i]);
+                res.forEach((el) => {
+                    const card = createNews(el);
                     const breaker = document.createElement('br');
                     row.append(card,breaker);
                    
-                }
+                })
                 div.append(row)
              
                 container.append(div)
@@ -129,6 +144,72 @@
                 div.append(img,right);
                 return div
             }
+            function searchArticles(){
+                event.preventDefault()
+                const searchBox = document.getElementById("inputSearch").value;
+                console.log(searchBox)
+                return fetch(`https://newsapi.org/v2/everything?q=${searchBox}&pageSize=5&page=${currentPage}&from=2021-09-29&sortBy=popularity&apiKey=1d8bf4c5ab40444d9153744947bba606`)
+                .then(function(res){
+                    return res.json();
+                })
+                .then(function(res){
+                    console.log(res.articles)
+                    displayNews(res.articles);
+                })
+                .catch(function(err){
+                    
+                    
+                });
+
+            }
+
+            function createPagination(){
+            const divs = document.getElementById("dimen");
+            divs.innerHTML = null;
+            const prev = document.createElement("button");
+            prev.textContent = "Previous";
+            prev.name = currentPage-1;
+            prev.setAttribute('class','btn btn-success')
+            if(currentPage === 1){
+                prev.disabled = true;
+            }
+            const current = document.createElement("button");
+            current.textContent = `Page: ${currentPage}`;
+            current.name = currentPage;
+            current.setAttribute('class','btn btn-success')
+            const next = document.createElement("button");
+            next.textContent = "Next";
+            next.name = currentPage+1;
+            next.setAttribute('class','btn btn-success')
+            divs.append(prev,current,next)
+        }
+
+        window.addEventListener("load",function(){
+            
+            const pagination1 = document.getElementById("dimen");
+            pagination1.addEventListener("click",handlePageChange)
+            createPagination();
+        });
+
+
+
+        function handlePageChange(){
+                    try{
+                        const pageNumber = parseInt(event.target.name);
+                        currentPage = pageNumber;
+                        
+                        searchArticles(currentPage)
+                        createPagination()
+                    }
+                    catch(e){
+                        //handle error
+                    }
+                }
+
+            
+            var btn = document.getElementById("search");
+            btn.addEventListener('click',searchArticles);
+    
     </script>
 </body>
 </html>
